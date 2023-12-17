@@ -17,6 +17,5 @@ sub trim {
     return $txt;
 }
 
-
 1;
 
