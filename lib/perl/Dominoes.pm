@@ -397,10 +397,6 @@ sub player_select_piece {
                 # Auto : Do a "next" player
                 ExceptPlayerNext->throw("Player [$player_num] did next");
             }
-
-            $err_msg = "AUTO Play not yet implemented";
-            next;
-
         }
         elsif ( $input =~ /n+/ ){
             # pass to next player (because no pieces are matching)
@@ -583,7 +579,8 @@ sub how_many_players {
             next;
         }
         if ($player_count eq "q" ){
-            die "Exiting Game. Bye !\n";
+            warn "Exiting Game. Bye !\n";
+            exit 0;
         }
         return $player_count;
     };
