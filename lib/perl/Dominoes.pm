@@ -27,7 +27,12 @@ use Dominoes::Util qw(
 
 my $separator = "----------------";
 
+my $DEFAULT_RETURN;
+
 sub main {
+    my ($p_default_return ) = @_;
+    $DEFAULT_RETURN = $p_default_return;
+
     while (true) {
         play_one_game();
     }
@@ -106,6 +111,7 @@ sub play_one_game {
             $game_in_play = false;
         }
         catch (ExceptGameOver $e) {
+            print "$separator\nGAME OVER !\n";
             print "Pieces left on Heap : ".
                     (get_piece_string($pieces_heap) || "None")."\n";
 
@@ -118,6 +124,7 @@ sub play_one_game {
             $next_count ++;
 
             if ($next_count >= $player_count){
+                print "$separator\nGAME OVER !\n";
                 print "Pieces left on Heap : ".
                         (get_piece_string($pieces_heap) || "None")."\n";
 
@@ -342,6 +349,8 @@ sub player_select_piece {
         $input = <STDIN> ;
 
         $input = trim(lc($input));
+
+        $input = "a" if ( ! $input && $DEFAULT_RETURN );
 
         my @inp_arr;
 
@@ -572,6 +581,8 @@ sub how_many_players {
     while ( my $player_count = <STDIN> ){
 
         $player_count = trim(lc($player_count));
+
+        $player_count = 4 if (! $player_count && $DEFAULT_RETURN);
 
         if ($player_count !~ /^[2-4q]$/){
             print "\nInvalid response [$player_count]\n";
