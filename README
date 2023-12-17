@@ -1,0 +1,15 @@
+Might need to install the cpan dependencies.
+
+See :
+    ./script/install-debian-dependencies.bash
+
+
+game runs with :
+    ./script/dominoes.pl
+
+
+and tests with :
+    prove ./t
+
+Tests are far from complete !
+

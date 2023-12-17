@@ -106,7 +106,11 @@ sub play_one_game {
             $game_in_play = false;
         }
         catch (ExceptGameOver $e) {
-            tally_up_scores($all_players_pieces, $player_num);
+            print "Pieces left on Heap : ".
+                    (get_piece_string($pieces_heap) || "None")."\n";
+
+            print "In Play Board is    : ".get_in_play_string($in_play_pieces)."\n";
+            print tally_up_scores($all_players_pieces, $player_num)."\n";
             $game_in_play = false;
         }
         catch (ExceptPlayerNext $e) {
@@ -114,7 +118,11 @@ sub play_one_game {
             $next_count ++;
 
             if ($next_count >= $player_count){
-                tally_up_scores($all_players_pieces);
+                print "Pieces left on Heap : ".
+                        (get_piece_string($pieces_heap) || "None")."\n";
+
+                print "In Play Board is    : ".get_in_play_string($in_play_pieces)."\n";
+                print tally_up_scores($all_players_pieces)."\n";
                 $game_in_play = false;
             }
         }
@@ -532,6 +540,7 @@ sub dots_can_go_left {
     my ($in_play_pieces, $piece_arr) = @_;
     # can return 0 for a "can play".
     # undef is returned for "Can't play".
+    # caller needs to test "defined-ness"
 
     my $left_dots_in_play = $in_play_pieces->[0][0];
     if (    $piece_arr->[0] == $left_dots_in_play
@@ -547,6 +556,7 @@ sub dots_can_go_right {
     my ($in_play_pieces, $piece_arr) = @_;
     # can return 0 for a "can play".
     # undef is returned for "Can't play".
+    # caller needs to test "defined-ness"
 
     my $right_dots_in_play =
                 $in_play_pieces->[$#$in_play_pieces][1];
@@ -593,7 +603,7 @@ sub get_piece_string {
 
     $str = trim( $str );
     if ($player_num) {
-        $str = sprintf( "Player %d pieces : %s", $player_num, $str);
+        $str = sprintf( "Player [%d] pieces : %s", $player_num, $str);
     }
 
     return $str;
@@ -604,10 +614,9 @@ sub get_in_play_string {
 
     my $str  = '';
     for my $piece ( @$in_play_pieces ){
-
         $str .= sprintf( "[%d-%d] ",$piece->[0], $piece->[1]);
     }
-    return $str;
+    return trim($str);
 }
 
 sub tally_up_scores {
@@ -626,18 +635,28 @@ sub tally_up_scores {
         }
     }
 
-    print "Game Result is (Winner at the top) :\n";
-    for my $pi ( sort { $player_scores->{$a} <=> $player_scores->{$b} }
-                 keys %$player_scores
-    ){
-        printf("Player [%d] . Spots count [%d]\n",
-               $pi, $player_scores->{$pi});
+    my @sorted_player_ind =
+            sort { $player_scores->{$a} <=> $player_scores->{$b} }
+                 keys %$player_scores;
+
+    # There could be a scenario where another player has the [0-0] piece.
+    # Player_out_first should win.
+    if ($player_out_first
+        && $sorted_player_ind[0] != $player_out_first
+    ) {
+         ($sorted_player_ind[0],$sorted_player_ind[1]) =
+                ($sorted_player_ind[1],$sorted_player_ind[0]);
     }
+
+    my $ret = "Game Result is (Winner at the top) :\n";
+    for my $pi ( @sorted_player_ind ){
+        $ret .= sprintf("Player [%d] . Spots count [% 3d] Pieces Left : %s\n",
+                    $pi, $player_scores->{$pi},
+                    get_piece_string($all_players_pieces->{$pi}) || "None",
+                );
+    }
+    return $ret;
 }
-
-
-
-
 
 1;
 
