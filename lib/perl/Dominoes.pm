@@ -317,6 +317,7 @@ sub player_select_piece {
     my $pieces_can_be_played_str = pieces_can_be_played_string(
                                     $single_player_pieces, $in_play_pieces);
 
+    # TODO : I don't like this ! Split out into a "help" ?
     my $msg = sprintf("Player [%d] you have the pieces : \n  %s\n".
                 "The in play board is \n  %s\n".
                 "You can play :\n %s\n".
@@ -343,6 +344,9 @@ sub player_select_piece {
 
     while (true){
 
+        # TODO , split out the stdin input and the main processing here.
+        # main processing would be easier to unit test.
+
         print "\n$err_msg\n\n" if $err_msg;
         $err_msg = '';
         print $msg;
@@ -365,8 +369,8 @@ sub player_select_piece {
             # kick off game again.
              ExceptKickOffGame->throw("Kick Off Game Again");
         }
-        elsif ( $input =~ /a+/ ){
-            # Auto play 
+        elsif ( $input =~ /^a+$/ ){
+            # Auto play
 
             my (undef, $can_be_played_index) =
                         pieces_can_be_played($single_player_pieces, $in_play_pieces);
@@ -407,7 +411,7 @@ sub player_select_piece {
                 ExceptPlayerNext->throw("Player [$player_num] did next");
             }
         }
-        elsif ( $input =~ /n+/ ){
+        elsif ( $input =~ /^n+$/ ){
             # pass to next player (because no pieces are matching)
             if ( $pieces_can_be_played_str ){
                 $err_msg ="Player [$player_num] can play a piece !";
@@ -421,7 +425,7 @@ sub player_select_piece {
 
             ExceptPlayerNext->throw("Player [$player_num] did next");
         }
-        elsif ( $input =~ /p+/ ){
+        elsif ( $input =~ /^p+$/ ){
             # pick up a piece from the heap.
             try {
                 get_player_piece_from_heap($pieces_heap, $single_player_pieces );
@@ -435,7 +439,7 @@ sub player_select_piece {
             };
             return;
         }
-        elsif ( $input =~ /q+/ ){
+        elsif ( $input =~ /^q+$/ ){
             warn "Exiting Game. Bye !\n";
             exit 0;
         }
@@ -638,8 +642,7 @@ sub tally_up_scores {
 
         for my $piece_ind ( keys %$single_player_pieces ){
             my $piece_arr = $single_player_pieces->{$piece_ind};
-            $player_scores->{$pi} += $piece_arr->[0];
-            $player_scores->{$pi} += $piece_arr->[1];
+            $player_scores->{$pi} += $piece_arr->[0] + $piece_arr->[1];
         }
     }
 
@@ -649,6 +652,7 @@ sub tally_up_scores {
 
     # There could be a scenario where another player has the [0-0] piece.
     # Player_out_first should win.
+    # TODO , could just count the pieces left instead of have $player_out_first.
     if ($player_out_first
         && $sorted_player_ind[0] != $player_out_first
     ) {
